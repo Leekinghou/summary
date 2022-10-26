@@ -6,6 +6,7 @@ import com.example.summary.entity.Book;
 import com.example.summary.entity.User;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -15,6 +16,10 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * 中间操作不会立即执行，只有等到终端操作的时候，流才开始真正地遍历，用于映射、过滤等。通俗点说，就是一次遍历执行多个操作，性能就大大提高了。
+ * long count = list.stream().distinct().count(); distinct:中间操作，count:终端操作
+ */
 
 class StreamControllerTest {
     static List<User> userList = Arrays.asList(
@@ -223,6 +228,7 @@ class StreamControllerTest {
     public void StreamFilterTest() {
         List<Book> collect = bookList.stream().filter(x -> x.getId() > 1).collect(toList());
         System.out.println(JSONObject.toJSONString(collect));
+        // contains也可以用
     }
 
     /**
@@ -272,4 +278,33 @@ class StreamControllerTest {
     }
     // allMatch,检查是否匹配所有元素，需要stream流的所有元素都匹配条件才返回true
     // noneMatch,检查是否没有匹配所有元素。
+
+
+    /**
+     * 组合
+     * reduce() 方法的主要作用是把 Stream 中的元素组合起来，它有两种用法：
+     *
+     * Optional<T> reduce(BinaryOperator<T> accumulator)
+     * 没有起始值，只有一个参数，就是运算规则，此时返回 Optional。
+     *
+     * T reduce(T identity, BinaryOperator<T> accumulator)
+     * 有起始值，有运算规则，两个参数，此时返回的类型和起始值类型一致。
+     */
+    @Test
+    public void StreamReduceTest() {
+        List<Integer> integers = Arrays.asList(0, 1, 2, 3, 4);
+        Integer optional = integers.stream().reduce(Integer::sum).get();
+        // 等同于：Optional<Integer> optional = integers.stream().reduce((a, b) -> a + b);
+        System.out.println(optional);
+
+        Integer option1 = integers.stream().reduce(3, Integer::sum);
+        System.out.println(option1);
+
+        String test = "Welcome to my introduction to Java 8. This tutorial guides you step by step through all new language features. Backed by short and simple code samples you'll learn how to use default interface methods, lambda expressions, method references and repeatable annotations. At the end of the article you'll be familiar with the most recent API changes like streams, functional interfaces, map extensions and the new Date API. No walls of text, just a bunch of commented code snippets. Enjoy!";
+        Pattern pattern = Pattern.compile(" ");
+        Stream<String> stringStream = pattern.splitAsStream(test);
+        List<String> collect = stringStream.filter(s -> s.length() > 5).sorted(Comparator.comparingInt(String::length)).limit(3).collect(toList());
+        collect.forEach(System.out::println);
+
+    }
 }
